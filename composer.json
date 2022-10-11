@@ -1,0 +1,19 @@
+{
+    "description": "Cache with stale period and asynchronous updates",
+    "type": "neos-package",
+    "name": "sitegeist/stalemate",
+    "license": "GPL-3.0+",
+    "require": {
+        "neos/flow": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sitegeist\\StaleMate\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Sitegeist.StaleMate"
+        }
+    }
+}

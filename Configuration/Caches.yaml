@@ -1,0 +1,4 @@
+Sitegeist_StaleMate_ClosureResultCache:
+  frontend: Neos\Cache\Frontend\VariableFrontend
+  backend: Neos\Cache\Backend\FileBackend
+
