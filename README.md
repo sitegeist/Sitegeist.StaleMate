@@ -22,27 +22,43 @@ user.
 The StaleMate cache is injected from flow.
 
 ```php
+
+        
+    /**
+     * @var VariableFrontend
+     * @Flow\Inject(lazy=false)
+     */
+    protected $cache;
+    
     /**
      * @var StaleMateCache
-     * @Flow\Inject
      */
     protected $staleMateCache;
+
+    public function initializeObject()
+    {
+        $staleMateCache = new \Sitegeist\StaleMate\Cache\StaleMateCache(
+            $cache, // the variable frontend to cache the date in
+            8600, // lifetime the default lifetime for the items
+            4300 // gracePeriod where items are updated asynchronous
+        );
+    }
 ```
 
-The cache is then called via the `get` mathod with an `identifier` and a`closure`.
+The cache is then called via the `resolve` mathod with an `identifier` and a`closure`.
 Please note that the closure cannot have arguments but instead may `use` variables
 from the context the method is called from.
 
 ```php
-    $result = $this->staleMateCache->get(
+    $result = $this->staleMateCache->resolve(
         $cacheId, // identifier used to store the result, has to be unique
         function () use ($suffThatIsNeeded) {
             $response = ... some expensive operation ...
             return $response;
         }, // closure to generate the result if no result is in the cache
+        ['someTag'], // tags for the cache item  
         86400, // lifetime of the cached result until a refresh is needed
-        43200, // period after lifetime where an update is performed async and the stale result is used
-        ['someTag'] // tags for the cache item  
+        43200 // gracePeriod after lifetime where an update is performed async and the stale result is used
     );
 ```
 
