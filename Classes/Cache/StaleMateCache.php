@@ -63,13 +63,8 @@ class StaleMateCache
      */
     public function resolve(string $identifier, \Closure $updateClosure, array $tags = [], ?int $lifeTime = null, ?int $gracePeriod = null, ?int $retryInterval = null)
     {
-        if (!$lifeTime) {
-            $lifeTime = $this->defaultLifetime;
-        }
-
-        if (!$gracePeriod) {
-            $lifeTime = $this->defaultGracePeriod;
-        }
+        $lifeTime = $lifeTime ?: $this->defaultLifetime;
+        $gracePeriod = $gracePeriod ?: $this->defaultGracePeriod;
 
         $valueFromCache = $this->cache->get($identifier);
         if ($valueFromCache) {
