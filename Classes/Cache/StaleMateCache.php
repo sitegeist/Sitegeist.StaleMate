@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Sitegeist\StaleMate\Cache;
@@ -38,7 +39,8 @@ class StaleMateCache
      */
     protected $closuresToUpdate = [];
 
-    public function __construct(VariableFrontend $cache, int $lifeTime, int $gracePeriod, ?int $retryInterval = null) {
+    public function __construct(VariableFrontend $cache, int $lifeTime, int $gracePeriod, ?int $retryInterval = null)
+    {
         $this->cache = $cache;
         $this->defaultLifetime = $lifeTime;
         $this->defaultGracePeriod = $gracePeriod;
@@ -109,10 +111,10 @@ class StaleMateCache
         foreach ($this->closuresToUpdate as $identifier => $item) {
             try {
                 $value = $item['closure']();
-                $this->logUpdate(false,$identifier,  $item['lifeTime'] ,  $item['gracePeriod'], $item['tags']);
+                $this->logUpdate(false, $identifier, $item['lifeTime'], $item['gracePeriod'], $item['tags']);
                 $this->cache->set($identifier, ['value' => $value, 'timestamp' => time()], $item['tags'], $item['lifeTime'] + $item['gracePeriod']);
             } catch (\Exception $e) {
-                $this->logException($e, $identifier, $item['lifeTime'] ,  $item['gracePeriod'], $item['tags']);
+                $this->logException($e, $identifier, $item['lifeTime'], $item['gracePeriod'], $item['tags']);
             }
         }
     }

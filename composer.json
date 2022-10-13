@@ -21,7 +21,8 @@
         }
     },
     "scripts": {
-        "test:lint": ["vendor/bin/phpcs --standard=PSR12 Classes"],
+        "test:lint-fix": ["vendor/bin/phpcbf --standard=PSR12 Classes"],
+        "test:lint": ["vendor/bin/phpcs --standard=PSR12 -n Classes"],
         "test:stan": ["vendor/bin/phpstan analyse Classes"],
         "test": ["composer install", "composer  test:lint", "composer  test:stan"]
     },
