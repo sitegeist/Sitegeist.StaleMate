@@ -8,11 +8,17 @@
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.78",
-        "squizlabs/php_codesniffer": "3.*"
+        "squizlabs/php_codesniffer": "3.*",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
             "Sitegeist\\StaleMate\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sitegeist\\StaleMate\\Tests\\": "Tests/"
         }
     },
     "extra": {
@@ -21,10 +27,12 @@
         }
     },
     "scripts": {
-        "test:lint-fix": ["vendor/bin/phpcbf --standard=PSR12 Classes"],
-        "test:lint": ["vendor/bin/phpcs --standard=PSR12 -n Classes"],
-        "test:stan": ["vendor/bin/phpstan analyse Classes"],
-        "test": ["composer install", "composer  test:lint", "composer  test:stan"]
+        "test:lint-fix": ["phpcbf --standard=PSR12 Classes"],
+        "test:lint": ["phpcs --standard=PSR12 -n Classes"],
+        "test:stan": ["phpstan analyse Classes"],
+        "test:unit": ["phpunit Tests/Unit"],
+
+        "test": ["composer install", "composer  test:lint", "composer  test:stan", "composer  test:unit"]
     },
     "config": {
         "allow-plugins": {
