@@ -23,6 +23,10 @@ class StaleMateCache
      */
     protected $defaultGracePeriod;
 
+    /**
+     * @var int|null
+     */
+    protected $defaultRetryInterval;
 
     /**
      * @var LoggerInterface
@@ -34,11 +38,11 @@ class StaleMateCache
      */
     protected $closuresToUpdate = [];
 
-    public function __construct(VariableFrontend $cache, int $lifeTime, int $gracePeriod) {
+    public function __construct(VariableFrontend $cache, int $lifeTime, int $gracePeriod, ?int $retryInterval = null) {
         $this->cache = $cache;
         $this->defaultLifetime = $lifeTime;
         $this->defaultGracePeriod = $gracePeriod;
-
+        $this->defaultRetryInterval = $retryInterval;
     }
 
     public function injectLogger(LoggerInterface $logger): void
@@ -55,7 +59,7 @@ class StaleMateCache
      *
      * @return mixed
      */
-    public function resolve(string $identifier, \Closure $updateClosure, array $tags = [], ?int $lifeTime = null, ?int $gracePeriod = null)
+    public function resolve(string $identifier, \Closure $updateClosure, array $tags = [], ?int $lifeTime = null, ?int $gracePeriod = null, ?int $retryInterval = null)
     {
         if (is_null($lifeTime)) {
             $lifeTime = $this->defaultLifetime;
