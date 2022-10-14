@@ -110,7 +110,7 @@ class ClosureCache
     public function logSkip(string $identifier): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $this->cache->getIdentifier(), $identifier, ));
+            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $this->cache->getIdentifier(), $identifier));
         }
     }
 
