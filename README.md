@@ -1,6 +1,8 @@
-# Sitegeist.StaleMate 
+# Sitegeist.StaleMate
+## Varnish like cache for Neos.Flow with asynchronous updates that returns stale results in the meantime
 
-Cache with asynchronous updates that returns stale results in the meantime.
+This package implements cache that will return stale values for a configurable time while the cache values are updated 
+asynchronously. Such behavior is well known from the varnish cache but not common in php. 
 
 The core concept is that the staleMateCache gets an `identifier` and `closure` for generating the required information
 if it cannot be found in the cache. The closure is called immediately if no cached result is found. If a result is found 
@@ -23,7 +25,8 @@ The StaleMate cache is injected from flow.
 
 ```php
 
-        
+    use \Sitegeist\StaleMate\Cache\ClosureCache as StaleMateCache;     
+    
     /**
      * @var VariableFrontend
      * @Flow\Inject(lazy=false)
@@ -37,10 +40,11 @@ The StaleMate cache is injected from flow.
 
     public function initializeObject()
     {
-        $staleMateCache = new \Sitegeist\StaleMate\Cache\StaleMateCache(
+        $staleMateCache = new \Sitegeist\StaleMate\Cache\ClosureCache(
             $cache, // the variable frontend to cache the date in
             8600, // lifetime the default lifetime for the items
-            4300 // gracePeriod where items are updated asynchronous
+            4300, // gracePeriod where items are updated asynchronous
+            60 // lockPeriod for asynchronous updates 
         );
     }
 ```
@@ -58,7 +62,8 @@ from the context the method is called from.
         }, // closure to generate the result if no result is in the cache
         ['someTag'], // tags for the cache item  
         86400, // lifetime of the cached result until a refresh is needed
-        43200 // gracePeriod after lifetime where an update is performed async and the stale result is used
+        43200, // gracePeriod after lifetime where an update is performed async and the stale result is used
+        60 // lockPeriod for asynchronous updates 
     );
 ```
 
