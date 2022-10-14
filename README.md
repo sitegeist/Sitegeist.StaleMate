@@ -41,8 +41,8 @@ The StaleMate cache is injected from flow.
     public function initializeObject()
     {
         $staleMateCache = new \Sitegeist\StaleMate\Cache\ClosureCache(
-            $cache, // the variable frontend to cache the date in
-            8600, // lifetime the default lifetime for the items
+            $cache, // the variable frontend to cache the data in
+            8600, // lifetime for the items
             4300, // gracePeriod where items are updated asynchronous
             60 // lockPeriod for asynchronous updates 
         );
