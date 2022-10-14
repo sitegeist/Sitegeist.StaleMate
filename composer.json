@@ -4,7 +4,7 @@
     "name": "sitegeist/stalemate",
     "license": "GPL-3.0+",
     "require": {
-        "neos/flow": "*"
+        "neos/flow": "^7.3 || ^8.0 || dev-main || dev-master"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.78",
