@@ -29,7 +29,6 @@ The StaleMate cache is injected from flow.
     
     /**
      * @var VariableFrontend
-     * @Flow\Inject(lazy=false)
      */
     protected $cache;
     
@@ -38,10 +37,19 @@ The StaleMate cache is injected from flow.
      */
     protected $staleMateCache;
 
+    /**
+     * @param VariableFrontend $cache
+     * @return void
+     */
+    public function injectCache(VariableFrontend $cache): void
+    {
+        $this->cache = $cache;
+    }
+    
     public function initializeObject()
     {
         $staleMateCache = new \Sitegeist\StaleMate\Cache\ClosureCache(
-            $cache, // the variable frontend to cache the data in
+            $this->cache, // the variable frontend to cache the data in
             8600, // lifetime for the items
             4300, // gracePeriod where items are updated asynchronous
             60 // lockPeriod for asynchronous updates 

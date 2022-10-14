@@ -110,21 +110,21 @@ class ClosureCache
     public function logSkip(string $identifier): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $identifier, $this->cache->getIdentifier()), get_defined_vars());
+            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $this->cache->getIdentifier(), $identifier, ));
         }
     }
 
     public function logUpdate(string $identifier): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s:%s was updated', $identifier, $this->cache->getIdentifier()), get_defined_vars());
+            $this->logger->info(sprintf('StaleMate item %s:%s was updated', $this->cache->getIdentifier(), $identifier));
         }
     }
 
     public function logException(string $identifier, \Exception $exception): void
     {
         if ($this->logger) {
-            $this->logger->error(sprintf('StaleMate update failed for %s:%s with message %s', $identifier, $this->cache->getIdentifier(), $exception->getMessage()), get_defined_vars());
+            $this->logger->error(sprintf('StaleMate update failed for %s:%s with message %s', $this->cache->getIdentifier(), $identifier, $exception->getMessage()), get_defined_vars());
         }
     }
 }
