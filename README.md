@@ -1,6 +1,8 @@
-# Sitegeist.StaleMate 
+# Sitegeist.StaleMate
+## Varnish like cache for Neos.Flow with asynchronous updates that returns stale results in the meantime
 
-Cache with asynchronous updates that returns stale results in the meantime.
+This package implements cache that will return stale values for a configurable time while the cache values are updated 
+asynchronously. Such behavior is well known from the varnish cache but not common in php. 
 
 The core concept is that the staleMateCache gets an `identifier` and `closure` for generating the required information
 if it cannot be found in the cache. The closure is called immediately if no cached result is found. If a result is found 

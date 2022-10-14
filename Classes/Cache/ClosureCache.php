@@ -77,15 +77,10 @@ class ClosureCache
             }
             return $cacheItem->getValue();
         } else {
-            try {
-                $value = $updateClosure();
-                $this->logUpdate(true, $identifier, $lifeTime, $gracePeriod, $tags);
-                $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
-                $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
-            } catch (\Exception $exception) {
-                $this->logException($exception, $identifier, $lifeTime, $gracePeriod, $tags);
-                throw $exception;
-            }
+            $value = $updateClosure();
+            $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
+            $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
+            $this->logUpdate($identifier);
             return $value;
         }
     }
@@ -96,64 +91,40 @@ class ClosureCache
             try {
                 if ($item->getLockPeriod() && $item->getLockPeriod() > 0) {
                     if ($this->cache->has($item->getIdentifier() . self::LOCKED)) {
-                        $this->logSkip(false, $identifier, $item->getLifeTime(), $item->getGracePeriod(), $item->getTags());
+                        $this->logSkip($identifier);
                         continue;
                     } else {
                         $this->cache->set($item->getIdentifier() . self::LOCKED, true, $item->getTags(), $item->getLockPeriod());
                     }
                 }
                 $value = $item->getClosure()();
-                $this->logUpdate(false, $identifier, $item->getLifeTime(), $item->getGracePeriod(), $item->getTags());
                 $cacheItem = Item::createFromValueAndGracePeriod($value, $item->getGracePeriod());
                 $this->cache->set($identifier, $cacheItem, $item->getTags(), $item->getLifeTime() + $item->getGracePeriod());
-            } catch (\Exception $e) {
-                $this->logException($e, $identifier, $item->getLifeTime(), $item->getGracePeriod(), $item->getTags());
+                $this->logUpdate($identifier);
+            } catch (\Exception $exception) {
+                $this->logException($identifier, $exception);
             }
         }
     }
 
-    /**
-     * @param bool $synchronous
-     * @param string $identifier
-     * @param int|null $lifeTime
-     * @param int|null $gracePeriod
-     * @param string[] $tags
-     * @return void
-     */
-    protected function logSkip(bool $synchronous, string $identifier, ?int $lifeTime, ?int $gracePeriod, array $tags): void
+    public function logSkip(string $identifier): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate skipped update of %s %s', $identifier, $synchronous ? 'sync' : 'async'), get_defined_vars());
+            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $identifier, $this->cache->getIdentifier()), get_defined_vars());
         }
     }
 
-    /**
-     * @param bool $synchronous
-     * @param string $identifier
-     * @param int|null $lifeTime
-     * @param int|null $gracePeriod
-     * @param string[] $tags
-     * @return void
-     */
-    protected function logUpdate(bool $synchronous, string $identifier, ?int $lifeTime, ?int $gracePeriod, array $tags): void
+    public function logUpdate(string $identifier): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s was updated %s', $identifier, $synchronous ? 'sync' : 'async'), get_defined_vars());
+            $this->logger->info(sprintf('StaleMate item %s:%s was updated', $identifier, $this->cache->getIdentifier()), get_defined_vars());
         }
     }
 
-    /**
-     * @param \Exception $exception
-     * @param string $identifier
-     * @param int|null $lifeTime
-     * @param int|null $gracePeriod
-     * @param string[] $tags
-     * @return void
-     */
-    protected function logException(\Exception $exception, string $identifier, ?int $lifeTime, ?int $gracePeriod, array $tags): void
+    public function logException(string $identifier, \Exception $exception): void
     {
         if ($this->logger) {
-            $this->logger->error(sprintf('StaleMate Update failed for %s with message %s', $identifier, $exception->getMessage()), get_defined_vars());
+            $this->logger->error(sprintf('StaleMate update failed for %s:%s with message %s', $identifier, $this->cache->getIdentifier(), $exception->getMessage()), get_defined_vars());
         }
     }
 }

@@ -20,7 +20,7 @@ class Item
      * @param mixed $value
      * @param int|null $staleTimestamp
      */
-    protected function __construct($value, ?int $staleTimestamp)
+    public function __construct($value, ?int $staleTimestamp)
     {
         $this->value = $value;
         $this->staleTimestamp = $staleTimestamp;
@@ -31,7 +31,7 @@ class Item
      * @param int|null $gracePeriod
      * @return static
      */
-    public static function createFromValueAndGracePeriod(mixed $value, ?int $gracePeriod): self
+    public static function createFromValueAndGracePeriod($value, ?int $gracePeriod = null): self
     {
         return new static($value, $gracePeriod ? time() + $gracePeriod : null);
     }
