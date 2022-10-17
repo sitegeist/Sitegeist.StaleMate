@@ -57,14 +57,14 @@ The StaleMate cache is injected from flow.
     }
 ```
 
-The cache is then called via the `resolve` mathod with an `identifier` and a`closure`.
+The cache is then called via the `resolve` method with an `identifier` and a`closure`.
 Please note that the closure cannot have arguments but instead may `use` variables
 from the context the method is called from.
 
 ```php
     $result = $this->staleMateCache->resolve(
         $cacheId, // identifier used to store the result, has to be unique
-        function () use ($suffThatIsNeeded) {
+        function () use ($stuffThatIsNeeded) {
             $response = ... some expensive operation ...
             return $response;
         }, // closure to generate the result if no result is in the cache
