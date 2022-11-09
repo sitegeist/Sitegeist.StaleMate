@@ -79,6 +79,12 @@ from the context the method is called from.
 
 Sitegeist.StaleMate is available via packagist. Just run `composer require sitegeist/stalemate` to install it. We use semantic-versioning so every breaking change will increase the major-version number.
 
+## Comparison to Symfony Cache Contracts
+
+The approach implemented here is somewhat similar to the [symfony cache contracts](https://symfony.com/doc/current/components/cache.html#cache-contracts) 
+but deviates in a specific way. Symfony Cache Contracts will roll a dice to upgrade cache entries before they expire to prevent 
+mass invalidation and recomputation. Stalemate on the other hand will return the cached item and recompute the value after the response was sent to the user.
+
 ## Contribution
 
 We will gladly accept contributions. Please send us pull requests.
