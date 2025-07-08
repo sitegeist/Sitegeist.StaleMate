@@ -77,11 +77,16 @@ class ClosureCache
             }
             return $cacheItem->getValue();
         } else {
-            $value = $updateClosure();
-            $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
-            $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
-            $this->logUpdate($identifier);
-            return $value;
+            try {
+                $value = $updateClosure();
+                $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
+                $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
+                $this->logUpdate($identifier, false);
+                return $value;
+            } catch (\Exception $exception) {
+                $this->logException($identifier, $exception, false);
+                throw $exception;
+            }
         }
     }
 
@@ -91,7 +96,7 @@ class ClosureCache
             try {
                 if ($item->getLockPeriod() && $item->getLockPeriod() > 0) {
                     if ($this->cache->has($item->getIdentifier() . self::LOCKED)) {
-                        $this->logSkip($identifier);
+                        $this->logSkip($identifier, true);
                         continue;
                     } else {
                         $this->cache->set($item->getIdentifier() . self::LOCKED, true, $item->getTags(), $item->getLockPeriod());
@@ -100,31 +105,31 @@ class ClosureCache
                 $value = $item->getClosure()();
                 $cacheItem = Item::createFromValueAndGracePeriod($value, $item->getGracePeriod());
                 $this->cache->set($identifier, $cacheItem, $item->getTags(), $item->getLifeTime() + $item->getGracePeriod());
-                $this->logUpdate($identifier);
+                $this->logUpdate($identifier, true);
             } catch (\Exception $exception) {
-                $this->logException($identifier, $exception);
+                $this->logException($identifier, $exception, true);
             }
         }
     }
 
-    public function logSkip(string $identifier): void
+    public function logSkip(string $identifier, bool $async): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s:%s was skipped', $this->cache->getIdentifier(), $identifier));
+            $this->logger->info(sprintf('StaleMate item %s:%s was skipped (%s)', $this->cache->getIdentifier(), $identifier, $async ? 'ASYNC' : 'SYNC'));
         }
     }
 
-    public function logUpdate(string $identifier): void
+    public function logUpdate(string $identifier, bool $async): void
     {
         if ($this->logger) {
-            $this->logger->info(sprintf('StaleMate item %s:%s was updated', $this->cache->getIdentifier(), $identifier));
+            $this->logger->info(sprintf('StaleMate item %s:%s was updated (%s)', $this->cache->getIdentifier(), $identifier, $async ? 'ASYNC' : 'SYNC'));
         }
     }
 
-    public function logException(string $identifier, \Exception $exception): void
+    public function logException(string $identifier, \Exception $exception, bool $async): void
     {
         if ($this->logger) {
-            $this->logger->error(sprintf('StaleMate update failed for %s:%s with message %s', $this->cache->getIdentifier(), $identifier, $exception->getMessage()), get_defined_vars());
+            $this->logger->error(sprintf('StaleMate update failed for %s:%s (%s) with message %s', $this->cache->getIdentifier(), $identifier, $async ? 'ASYNC' : 'SYNC', $exception->getMessage()), get_defined_vars());
         }
     }
 }

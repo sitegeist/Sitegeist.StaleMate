@@ -143,10 +143,12 @@ class ClosureCacheTest extends TestCase
     /**
      * @test
      */
-    public function exceptionsAreThrownWhenClosureIsCalledSychronously(): void
+    public function exceptionsAreThrownWhenClosureIsCalledSychronouslyAndAreLoggedAswell(): void
     {
         // the test subject
-        $closureCache = new ClosureCache($this->mockCache, 600, 600, 60);
+        $closureCache = $this->getMockBuilder(ClosureCache::class)->onlyMethods(['logException'])->setConstructorArgs([$this->mockCache, 600, 600, 60])->getMock();
+
+        $exception = new \Exception();
 
         // the cache returns no results and thus the closure has to be calles syncronously
         $this->mockCache->expects($this->once())->method('get')->with('nudelsuppe')->willReturn( false);
@@ -154,12 +156,14 @@ class ClosureCacheTest extends TestCase
         $this->mockCache->expects($this->never())->method('set');
         $this->mockCache->expects($this->never())->method('has')->with('nudelsuppe' . ClosureCache::LOCKED);
 
+        $closureCache->expects($this->once())->method('logException')->with('nudelsuppe', $exception, false);
+
         $this->expectException(\Exception::class);
 
         $result = $closureCache->resolve(
             'nudelsuppe',
-            function() {
-                throw new \Exception();
+            function() use ($exception) {
+                throw $exception;
             }
         );
 
@@ -187,12 +191,12 @@ class ClosureCacheTest extends TestCase
         $this->mockCache->expects($this->once())->method('set')->with('nudelsuppe' . ClosureCache::LOCKED, true);
 
         // but the exception is logged
-        $closureCache->expects($this->once())->method('logException')->with('nudelsuppe', $exception);
+        $closureCache->expects($this->once())->method('logException')->with('nudelsuppe', $exception, true);
 
         $result = $closureCache->resolve(
             'nudelsuppe',
-            function() {
-                throw new \Exception();
+            function() use ($exception) {
+                throw $exception;
             }
         );
 
