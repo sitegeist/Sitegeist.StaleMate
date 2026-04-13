@@ -23,7 +23,7 @@ class ClosureCacheTest extends TestCase
     /**
      * @test
      */
-    public function inCaseOfEmptyCacheTheClosureIsCallesImmediately(): void
+    public function inCaseOfEmptyCacheTheClosureIsCalledImmediately(): void
     {
         // the test subject
         $closureCache = new ClosureCache($this->mockCache, 600, 400, 60);
@@ -71,6 +71,36 @@ class ClosureCacheTest extends TestCase
             $mockClosure
         );
         $this->assertSame("result from cache", $result);
+    }
+
+    /**
+     * @test
+     */
+    public function ifResultsAreInTheCacheTheClosureIsEvaluatedWhenForceImmediateIsSet(): void
+    {
+        // the test subject
+        $closureCache = new ClosureCache($this->mockCache, 600, 400, 60);
+
+        // create a mock closure that expects not to be called
+        $mockClass =  $this->getMockBuilder(\stdClass::class)->addMethods(['calculateClosureValue'])->getMock();
+        $mockClass->expects($this->once())->method('calculateClosureValue')->willReturn("result from closure");
+        $mockClosure = \Closure::fromCallable([$mockClass, 'calculateClosureValue']);
+
+        // cache is not asked for present data
+        $this->mockCache->expects($this->never())->method('get')->with('nudelsuppe');
+        // after synchronous calculation the item is stored with combined lifetime and closure lifetime
+        $this->mockCache->expects($this->once())->method('set')->with('nudelsuppe', Item::createFromValueAndGracePeriod("result from closure", 400), [], 1000);
+
+        $result = $closureCache->resolve(
+            'nudelsuppe',
+            $mockClosure,
+            [],
+            null,
+            null,
+            null,
+            true
+        );
+        $this->assertSame("result from closure", $result);
     }
 
     /**

@@ -57,36 +57,39 @@ class ClosureCache
     /**
      * @param string $identifier identifier used to store the result, has to be unique
      * @param \Closure $updateClosure closure to generate the result if no result is in the cache
+     * @param string[] $tags tags for the cache item
      * @param int $lifeTime lifetime of the cached result until a refresh is needed
      * @param int $gracePeriod period after lifetime where an update is performed async and the stale result is used
      * @param int $lockPeriod period after lifetime where an update is performed async and the stale result is used
-     * @param string[] $tags tags for the cache item
+     * @param bool $forceImmediateUpdate enforce a direct update
      *
      * @return mixed
      */
-    public function resolve(string $identifier, \Closure $updateClosure, array $tags = [], ?int $lifeTime = null, ?int $gracePeriod = null, ?int $lockPeriod = null)
+    public function resolve(string $identifier, \Closure $updateClosure, array $tags = [], ?int $lifeTime = null, ?int $gracePeriod = null, ?int $lockPeriod = null, bool $forceImmediateUpdate = false)
     {
         $lifeTime = $lifeTime ?: $this->defaultLifetime;
         $gracePeriod = $gracePeriod ?: $this->defaultGracePeriod;
         $lockPeriod = $lockPeriod ?: $this->defaultLockPeriod;
 
-        $cacheItem = $this->cache->get($identifier);
-        if ($cacheItem && $cacheItem instanceof Item) {
-            if ($cacheItem->isRefreshRequired()) {
-                $this->closuresToUpdate[$identifier] = new RefreshRequest($identifier, $updateClosure, $lifeTime, $gracePeriod, $lockPeriod, $tags);
+        if ($forceImmediateUpdate === false) {
+            $cacheItem = $this->cache->get($identifier);
+            if ($cacheItem && $cacheItem instanceof Item) {
+                if ($cacheItem->isRefreshRequired()) {
+                    $this->closuresToUpdate[ $identifier ] = new RefreshRequest($identifier, $updateClosure, $lifeTime, $gracePeriod, $lockPeriod, $tags);
+                }
+                return $cacheItem->getValue();
             }
-            return $cacheItem->getValue();
-        } else {
-            try {
-                $value = $updateClosure();
-                $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
-                $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
-                $this->logUpdate($identifier, false);
-                return $value;
-            } catch (\Exception $exception) {
-                $this->logException($identifier, $exception, false);
-                throw $exception;
-            }
+        }
+
+        try {
+            $value = $updateClosure();
+            $cacheItem = Item::createFromValueAndGracePeriod($value, $gracePeriod);
+            $this->cache->set($identifier, $cacheItem, $tags, $lifeTime + $gracePeriod);
+            $this->logUpdate($identifier, false);
+            return $value;
+        } catch (\Exception $exception) {
+            $this->logException($identifier, $exception, false);
+            throw $exception;
         }
     }
 
